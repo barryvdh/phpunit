@@ -9,6 +9,7 @@
  */
 namespace PHPUnit\Logging\JUnit;
 
+use function assert;
 use DOMDocument;
 use DOMElement;
 use PHPUnit\Event\Assertion\Made;
@@ -213,6 +214,8 @@ final class JunitXmlLogger extends Printer
 
     public function testFinished(Finished $event): void
     {
+        assert($this->time !== null);
+
         $time = $event->telemetryInfo()->time()->duration($this->time)->asFloat();
 
         $this->testSuiteAssertions[$this->testSuiteLevel] += $this->numberOfAssertions;
