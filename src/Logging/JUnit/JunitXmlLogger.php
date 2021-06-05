@@ -310,6 +310,8 @@ final class JunitXmlLogger extends Printer
         Facade::registerSubscriber(new TestPassedButRiskySubscriber($this));
         Facade::registerSubscriber(new TestErroredSubscriber($this));
         Facade::registerSubscriber(new TestFailedSubscriber($this));
+        Facade::registerSubscriber(new TestAbortedSubscriber($this));
+        Facade::registerSubscriber(new TestSkippedSubscriber($this));
         Facade::registerSubscriber(new AssertionMadeSubscriber($this));
     }
 
