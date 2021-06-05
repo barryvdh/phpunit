@@ -32,7 +32,7 @@ use PHPUnit\Event;
 use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\TestResult;
 use PHPUnit\Framework\TestSuite;
-use PHPUnit\Logging\JunitXmlLogger;
+use PHPUnit\Logging\JUnit\JunitXmlLogger;
 use PHPUnit\Logging\TeamCityLogger;
 use PHPUnit\Logging\TestDox\CliTestDoxPrinter;
 use PHPUnit\Logging\TestDox\HtmlResultPrinter;
@@ -278,6 +278,13 @@ final class TestRunner
             $this->printer->setShowProgressAnimation(!$arguments['noInteraction']);
         }
 
+        if (isset($arguments['junitLogfile'])) {
+            $junitXmlLogger = new JunitXmlLogger(
+                $arguments['junitLogfile'],
+                $arguments['reportUselessTests']
+            );
+        }
+
         if (isset($arguments['plainTextTrace'])) {
             if (is_file($arguments['plainTextTrace'])) {
                 unlink($arguments['plainTextTrace']);
@@ -335,15 +342,6 @@ final class TestRunner
         if (isset($arguments['teamcityLogfile'])) {
             $result->addListener(
                 new TeamCityLogger($arguments['teamcityLogfile'])
-            );
-        }
-
-        if (isset($arguments['junitLogfile'])) {
-            $result->addListener(
-                new JunitXmlLogger(
-                    $arguments['junitLogfile'],
-                    $arguments['reportUselessTests']
-                )
             );
         }
 
@@ -728,6 +726,10 @@ final class TestRunner
                     $this->codeCoverageGenerationFailed($e);
                 }
             }
+        }
+
+        if (isset($junitXmlLogger)) {
+            $junitXmlLogger->flush();
         }
 
         return $result;
