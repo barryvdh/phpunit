@@ -329,6 +329,9 @@ final class JunitXmlLogger extends Printer
 
     private function handleFault(Test $test, Throwable $throwable, string $type): void
     {
+        /*
+         * @todo Figure out why this safeguard is required
+         */
         if ($this->currentTestCase === null) {
             return;
         }
@@ -352,6 +355,9 @@ final class JunitXmlLogger extends Printer
 
     private function handleIncompleteOrSkipped(): void
     {
+        /*
+         * @todo Figure out why this safeguard is required
+         */
         if ($this->currentTestCase === null) {
             return;
         }
