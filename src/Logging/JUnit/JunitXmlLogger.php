@@ -20,6 +20,7 @@ use PHPUnit\Event\Telemetry\HRTime;
 use PHPUnit\Event\Test\Errored;
 use PHPUnit\Event\Test\Failed;
 use PHPUnit\Event\Test\Finished;
+use PHPUnit\Event\Test\OutputPrinted;
 use PHPUnit\Event\Test\Passed;
 use PHPUnit\Event\Test\PassedButRisky;
 use PHPUnit\Event\Test\PassedWithWarning;
@@ -89,6 +90,8 @@ final class JunitXmlLogger extends Printer
     private int $numberOfAssertions = 0;
 
     private ?HRTime $time = null;
+
+    private ?string $output = null;
 
     /**
      * @param null|mixed $out
@@ -212,6 +215,11 @@ final class JunitXmlLogger extends Printer
         $this->time               = $event->telemetryInfo()->time();
     }
 
+    public function testPrintedOutput(OutputPrinted $event): void
+    {
+        $this->output = $event->output();
+    }
+
     public function testFinished(Finished $event): void
     {
         assert($this->time !== null);
@@ -237,10 +245,10 @@ final class JunitXmlLogger extends Printer
         $this->testSuiteTests[$this->testSuiteLevel]++;
         $this->testSuiteTimes[$this->testSuiteLevel] += $time;
 
-        if (!empty($event->output())) {
+        if ($this->output !== null) {
             $systemOut = $this->document->createElement(
                 'system-out',
-                Xml::prepareString($event->output())
+                Xml::prepareString($this->output)
             );
 
             $this->currentTestCase->appendChild($systemOut);
@@ -249,6 +257,7 @@ final class JunitXmlLogger extends Printer
         $this->currentTestCase    = null;
         $this->numberOfAssertions = 0;
         $this->time               = null;
+        $this->output             = null;
     }
 
     public function testAborted(): void
@@ -307,6 +316,7 @@ final class JunitXmlLogger extends Printer
         Facade::registerSubscriber(new TestSuiteStartedSubscriber($this));
         Facade::registerSubscriber(new TestSuiteFinishedSubscriber($this));
         Facade::registerSubscriber(new TestPreparedSubscriber($this));
+        Facade::registerSubscriber(new TestPrintedOutputSubscriber($this));
         Facade::registerSubscriber(new TestFinishedSubscriber($this));
         Facade::registerSubscriber(new TestPassedSubscriber($this));
         Facade::registerSubscriber(new TestPassedWithWarningSubscriber($this));
