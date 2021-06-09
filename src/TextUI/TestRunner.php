@@ -54,7 +54,6 @@ use PHPUnit\Runner\TestSuiteSorter;
 use PHPUnit\Runner\Version;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\FilterMapper;
 use PHPUnit\TextUI\XmlConfiguration\Configuration;
-use PHPUnit\TextUI\XmlConfiguration\Loader;
 use PHPUnit\TextUI\XmlConfiguration\PhpHandler;
 use PHPUnit\Util\Filesystem;
 use PHPUnit\Util\Printer;
@@ -757,10 +756,6 @@ final class TestRunner
      */
     private function handleConfiguration(array &$arguments): void
     {
-        if (!isset($arguments['configurationObject']) && isset($arguments['configuration'])) {
-            $arguments['configurationObject'] = (new Loader)->load($arguments['configuration']);
-        }
-
         if (!isset($arguments['warnings'])) {
             $arguments['warnings'] = [];
         }
