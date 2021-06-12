@@ -112,11 +112,6 @@ final class TestRunner
 
         $warnings = array_merge($warnings, $arguments['warnings']);
 
-        if (is_int($arguments['columns']) && $arguments['columns'] < 16) {
-            $arguments['columns']   = 16;
-            $tooFewColumnsRequested = true;
-        }
-
         $configuration = Configuration::get();
 
         if ($configuration->hasBootstrap()) {
@@ -491,7 +486,7 @@ final class TestRunner
             );
         }
 
-        if (isset($tooFewColumnsRequested)) {
+        if ($configuration->tooFewColumnsRequested()) {
             $warnings[] = 'Less than 16 columns requested, number of columns set to 16';
         }
 
@@ -911,7 +906,6 @@ final class TestRunner
         $arguments['backupStaticProperties']                          = $arguments['backupStaticProperties'] ?? null;
         $arguments['beStrictAboutChangesToGlobalState']               = $arguments['beStrictAboutChangesToGlobalState'] ?? null;
         $arguments['colors']                                          = $arguments['colors'] ?? DefaultResultPrinter::COLOR_DEFAULT;
-        $arguments['columns']                                         = $arguments['columns'] ?? 80;
         $arguments['convertDeprecationsToExceptions']                 = $arguments['convertDeprecationsToExceptions'] ?? true;
         $arguments['convertErrorsToExceptions']                       = $arguments['convertErrorsToExceptions'] ?? true;
         $arguments['convertNoticesToExceptions']                      = $arguments['convertNoticesToExceptions'] ?? true;
@@ -1034,7 +1028,7 @@ final class TestRunner
             $arguments['verbose'],
             $arguments['colors'],
             $arguments['debug'],
-            $arguments['columns'],
+            $configuration->columns(),
             $arguments['reverseList']
         );
 
