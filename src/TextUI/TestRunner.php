@@ -17,6 +17,7 @@ use function array_map;
 use function array_merge;
 use function assert;
 use function defined;
+use function extension_loaded;
 use function htmlspecialchars;
 use function is_array;
 use function is_file;
@@ -40,6 +41,7 @@ use PHPUnit\Runner\BeforeFirstTestHook;
 use PHPUnit\Runner\CodeCoverage;
 use PHPUnit\Runner\DefaultTestResultCache;
 use PHPUnit\Runner\Extension\ExtensionHandler;
+use PHPUnit\Runner\Extension\PharLoader;
 use PHPUnit\Runner\Filter\Factory;
 use PHPUnit\Runner\Hook;
 use PHPUnit\Runner\NullTestResultCache;
@@ -113,6 +115,14 @@ final class TestRunner
         $warnings = array_merge($warnings, $arguments['warnings']);
 
         $configuration = Configuration::get();
+
+        if ($configuration->loadPharExtensions() &&
+            $configuration->hasPharExtensionDirectory() &&
+            extension_loaded('phar')) {
+            $pharExtensions = (new PharLoader)->loadPharExtensionsInDirectory(
+                $configuration->pharExtensionDirectory()
+            );
+        }
 
         if ($configuration->hasBootstrap()) {
             $GLOBALS['__PHPUNIT_BOOTSTRAP'] = $configuration->bootstrap();
@@ -464,18 +474,20 @@ final class TestRunner
                 );
             }
 
-            foreach ($arguments['loadedExtensions'] as $extension) {
-                $this->writeMessage(
-                    'Extension',
-                    $extension
-                );
-            }
+            if (isset($pharExtensions)) {
+                foreach ($pharExtensions['loadedExtensions'] as $extension) {
+                    $this->writeMessage(
+                        'Extension',
+                        $extension
+                    );
+                }
 
-            foreach ($arguments['notLoadedExtensions'] as $extension) {
-                $this->writeMessage(
-                    'Extension',
-                    $extension
-                );
+                foreach ($pharExtensions['notLoadedExtensions'] as $extension) {
+                    $this->writeMessage(
+                        'Extension',
+                        $extension
+                    );
+                }
             }
         }
 
