@@ -86,7 +86,7 @@ final class TestRunner
      */
     private array $extensions = [];
 
-    private Timer $timer;
+    private ?Timer $timer = null;
 
     public function __construct(CodeCoverageFilter $filter = null)
     {
@@ -95,7 +95,6 @@ final class TestRunner
         }
 
         $this->codeCoverageFilter = $filter;
-        $this->timer              = new Timer;
     }
 
     /**
@@ -1058,7 +1057,7 @@ final class TestRunner
             )
         );
 
-        $this->timer->start();
+        $this->timer()->start();
     }
 
     private function codeCoverageGenerationSucceeded(): void
@@ -1066,7 +1065,7 @@ final class TestRunner
         $this->printer->write(
             sprintf(
                 "done [%s]\n",
-                $this->timer->stop()->asString()
+                $this->timer()->stop()->asString()
             )
         );
     }
@@ -1076,9 +1075,18 @@ final class TestRunner
         $this->printer->write(
             sprintf(
                 "failed [%s]\n%s\n",
-                $this->timer->stop()->asString(),
+                $this->timer()->stop()->asString(),
                 $e->getMessage()
             )
         );
+    }
+
+    private function timer(): Timer
+    {
+        if ($this->timer === null) {
+            $this->timer = new Timer;
+        }
+
+        return $this->timer;
     }
 }
