@@ -75,6 +75,8 @@ use SebastianBergmann\Timer\Timer;
  */
 final class TestRunner
 {
+    private Configuration $configuration;
+
     private ?CodeCoverageFilter $codeCoverageFilter;
 
     private ?ResultPrinter $printer = null;
@@ -95,6 +97,7 @@ final class TestRunner
         }
 
         $this->codeCoverageFilter = $filter;
+        $this->configuration      = Configuration::get();
     }
 
     /**
@@ -113,18 +116,16 @@ final class TestRunner
 
         $warnings = array_merge($warnings, $arguments['warnings']);
 
-        $configuration = Configuration::get();
-
-        if ($configuration->loadPharExtensions() &&
-            $configuration->hasPharExtensionDirectory() &&
+        if ($this->configuration->loadPharExtensions() &&
+            $this->configuration->hasPharExtensionDirectory() &&
             extension_loaded('phar')) {
             $pharExtensions = (new PharLoader)->loadPharExtensionsInDirectory(
-                $configuration->pharExtensionDirectory()
+                $this->configuration->pharExtensionDirectory()
             );
         }
 
-        if ($configuration->hasBootstrap()) {
-            $GLOBALS['__PHPUNIT_BOOTSTRAP'] = $configuration->bootstrap();
+        if ($this->configuration->hasBootstrap()) {
+            $GLOBALS['__PHPUNIT_BOOTSTRAP'] = $this->configuration->bootstrap();
         }
 
         if ($arguments['backupGlobals'] === true) {
@@ -143,8 +144,8 @@ final class TestRunner
             mt_srand($arguments['randomOrderSeed']);
         }
 
-        if ($configuration->cacheResult()) {
-            $cache = new DefaultTestResultCache($configuration->testResultCacheFile());
+        if ($this->configuration->cacheResult()) {
+            $cache = new DefaultTestResultCache($this->configuration->testResultCacheFile());
 
             $this->addExtension(new ResultCacheExtension($cache));
         }
@@ -403,8 +404,8 @@ final class TestRunner
                     CodeCoverage::activate($this->codeCoverageFilter, false);
                 }
 
-                if ($configuration->hasCoverageCacheDirectory()) {
-                    CodeCoverage::instance()->cacheStaticAnalysis($configuration->coverageCacheDirectory());
+                if ($this->configuration->hasCoverageCacheDirectory()) {
+                    CodeCoverage::instance()->cacheStaticAnalysis($this->configuration->coverageCacheDirectory());
                 }
 
                 CodeCoverage::instance()->excludeSubclassesOfThisClassFromUnintentionallyCoveredCodeCheck(Comparator::class);
@@ -413,13 +414,13 @@ final class TestRunner
                     CodeCoverage::instance()->enableCheckForUnintentionallyCoveredCode();
                 }
 
-                if ($configuration->ignoreDeprecatedCodeUnitsFromCodeCoverage()) {
+                if ($this->configuration->ignoreDeprecatedCodeUnitsFromCodeCoverage()) {
                     CodeCoverage::instance()->ignoreDeprecatedCode();
                 } else {
                     CodeCoverage::instance()->doNotIgnoreDeprecatedCode();
                 }
 
-                if ($configuration->disableCodeCoverageIgnore()) {
+                if ($this->configuration->disableCodeCoverageIgnore()) {
                     CodeCoverage::instance()->disableAnnotationsForIgnoringCode();
                 } else {
                     CodeCoverage::instance()->enableAnnotationsForIgnoringCode();
@@ -497,7 +498,7 @@ final class TestRunner
             );
         }
 
-        if ($configuration->tooFewColumnsRequested()) {
+        if ($this->configuration->tooFewColumnsRequested()) {
             $warnings[] = 'Less than 16 columns requested, number of columns set to 16';
         }
 
@@ -1035,11 +1036,11 @@ final class TestRunner
         $configuration = Configuration::get();
 
         $object = new $className(
-            $configuration->outputToStandardErrorStream() ? 'php://stderr' : null,
+            $this->configuration->outputToStandardErrorStream() ? 'php://stderr' : null,
             $arguments['verbose'],
             $arguments['colors'],
             $arguments['debug'],
-            $configuration->columns(),
+            $this->configuration->columns(),
             $arguments['reverseList']
         );
 
